@@ -175,10 +175,17 @@ app.post('/divine', async (req, res) => {
 // ============================================================
 // 启动服务器
 // ============================================================
-app.listen(PORT, () => {
-  console.log('');
-  console.log('🔮 夜行塔罗服务已启动');
-  console.log(`📱 浏览器访问: http://localhost:${PORT}`);
-  console.log('   按 Ctrl+C 可停止服务');
-  console.log('');
-});
+// 本地直接运行（node server.js）时才会监听端口；
+// 部署到 Vercel 时，Vercel 会把 app 当作 serverless function 调用，不应该 listen。
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log('');
+    console.log('🔮 夜行塔罗服务已启动');
+    console.log(`📱 浏览器访问: http://localhost:${PORT}`);
+    console.log('   按 Ctrl+C 可停止服务');
+    console.log('');
+  });
+}
+
+// 导出 Express app，给 Vercel @vercel/node 包装
+module.exports = app;
