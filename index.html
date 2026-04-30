@@ -1,0 +1,1820 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>夜行塔罗 · NocturneTarot</title>
+
+  <!-- 字体：Cinzel（西式奇幻衬线）+ Noto Serif SC（中文衬线） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Noto+Serif+SC:wght@400;700;900&display=swap" rel="stylesheet">
+
+  <!-- html2canvas：把页面节点截成图（Day 6 分享卡片用） -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <style>
+    /* === 基础重置 === */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* === 页面整体：固定的城堡星空背景 === */
+    body {
+      min-height: 100vh;
+      background:
+        linear-gradient(
+          to bottom,
+          rgba(5, 3, 15, 0.55) 0%,
+          rgba(5, 3, 15, 0.40) 40%,
+          rgba(5, 3, 15, 0.65) 100%
+        ),
+        url('assets/bg.png') center/cover no-repeat,
+        #0a0518;
+      background-attachment: fixed;
+
+      font-family: 'Noto Serif SC', serif;
+      color: #fff;
+      padding-bottom: 4rem; /* 底部留点空间 */
+    }
+
+    /* === 主容器 === */
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ============================================== */
+    /* 标题区（hero）                                   */
+    /* ============================================== */
+
+    .hero {
+      text-align: center;
+      padding: 14vh 0 14vh; /* 标题下方留更多空间，让 label 落到暗区 */
+    }
+
+    h1 {
+      font-family: 'Noto Serif SC', serif;
+      font-weight: 900;
+      font-size: clamp(3rem, 9vw, 6rem);
+      letter-spacing: 0.28em;
+
+      background: linear-gradient(135deg,
+        #ffe07a 0%, #fff5b8 30%, #ffd84a 55%, #ffe89c 80%, #ffc939 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+
+      filter:
+        drop-shadow(0 0 18px rgba(255, 220, 120, 0.55))
+        drop-shadow(0 0 40px rgba(255, 200, 80, 0.30));
+
+      margin-bottom: 0.6rem;
+    }
+    h1::before, h1::after {
+      content: "✦";
+      display: inline-block;
+      font-size: 0.45em;
+      vertical-align: middle;
+      margin: 0 0.4em;
+      color: #ffd76a;
+      filter: drop-shadow(0 0 8px rgba(255, 215, 106, 0.7));
+    }
+
+    .latin-title {
+      font-family: 'Cinzel', serif;
+      font-weight: 500;
+      font-size: clamp(0.85rem, 1.8vw, 1.2rem);
+      letter-spacing: 0.5em;
+      color: rgba(255, 230, 160, 0.85);
+      margin-bottom: 2.6rem;
+      padding-left: 0.5em;
+    }
+
+    .subtitle {
+      font-family: 'Noto Serif SC', serif;
+      font-weight: 700;
+      font-size: clamp(0.95rem, 2vw, 1.2rem);
+      color: #ffd97a;
+      letter-spacing: 0.4em;
+      text-shadow: 0 0 10px rgba(255, 200, 80, 0.35);
+
+      display: inline-block;
+      padding: 0.7em 2em;
+      border-top: 1px solid rgba(255, 220, 130, 0.7);
+      border-bottom: 1px solid rgba(255, 220, 130, 0.7);
+    }
+
+    /* ============================================== */
+    /* 占卜仪式区（ritual）                              */
+    /* ============================================== */
+
+    .ritual {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2.5rem; /* 各模块之间的间距 */
+    }
+
+    /* --- 问题输入框 --- */
+    .question-box {
+      width: 100%;
+      max-width: 600px;
+    }
+    .question-box label {
+      display: block;
+      text-align: center;
+      font-family: 'Cinzel', serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.4em;
+      color: rgba(255, 220, 140, 0.7);
+      margin-bottom: 0.8rem;
+    }
+    .question-box textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 1rem 1.25rem;
+      border: 1px solid rgba(255, 215, 106, 0.4);
+      border-radius: 6px;
+
+      /* 半透明深色 + 毛玻璃效果 */
+      background: rgba(15, 8, 30, 0.5);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+
+      font-family: 'Noto Serif SC', serif;
+      font-size: 1rem;
+      line-height: 1.7;
+      color: #fff;
+      resize: vertical; /* 用户可竖向拖拽改变高度 */
+      outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .question-box textarea::placeholder {
+      color: rgba(255, 230, 180, 0.4);
+      font-style: italic;
+    }
+    .question-box textarea:focus {
+      border-color: rgba(255, 215, 106, 0.9);
+      box-shadow: 0 0 20px rgba(255, 200, 80, 0.25);
+    }
+
+    /* --- 占卜按钮 --- */
+    .divine-btn {
+      font-family: 'Noto Serif SC', serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: 0.5em;
+      padding: 1rem 2.5rem 1rem 3rem; /* 右多一点抵消字距 */
+
+      background: linear-gradient(135deg,
+        rgba(255, 215, 106, 0.95) 0%,
+        rgba(255, 235, 150, 0.95) 50%,
+        rgba(255, 200, 60, 0.95) 100%);
+      color: #1a0d2e;
+      border: 1px solid rgba(255, 240, 180, 0.8);
+      border-radius: 4px;
+      cursor: pointer;
+
+      box-shadow:
+        0 0 20px rgba(255, 200, 80, 0.4),
+        inset 0 1px 2px rgba(255, 255, 255, 0.5);
+      transition: all 0.3s;
+    }
+    .divine-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow:
+        0 0 30px rgba(255, 200, 80, 0.7),
+        inset 0 1px 2px rgba(255, 255, 255, 0.5);
+    }
+    /* 禁用时：保留按钮形态，只降低饱和度——让用户看见"这里有个待激活的按钮" */
+    .divine-btn:disabled {
+      background: rgba(40, 25, 60, 0.6);                /* 暗紫透明，有层次 */
+      color: rgba(255, 220, 140, 0.55);                  /* 暗金，仍可读 */
+      border: 1px solid rgba(255, 215, 106, 0.35);       /* 金边减弱但保留 */
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);     /* 内阴影暗示"沉下去" */
+      cursor: not-allowed;
+      transform: none; /* 禁用态不响应 hover 抬升 */
+    }
+
+    /* 按钮下方提示——禁用时显示"请先写下问题"，启用后淡出 */
+    .btn-hint {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 0.85rem;
+      color: rgba(255, 220, 140, 0.55);
+      letter-spacing: 0.25em;
+      margin-top: -1.5rem;            /* 紧贴按钮下方 */
+      text-align: center;
+      transition: opacity 0.4s;
+      opacity: 1;
+    }
+    .btn-hint.is-hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* --- 三张卡片 --- */
+    .cards {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      flex-wrap: wrap; /* 屏幕窄时自动换行 */
+    }
+
+    /* 卡片外壳：负责 3D 透视和下方标签的布局 */
+    .card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.8rem;
+      perspective: 1200px; /* 给翻面动画提供 3D 透视感 */
+    }
+
+    /* 真正承担翻面的内容容器 */
+    .card-inner {
+      position: relative;
+      width: 180px;
+      height: 290px;
+      transform-style: preserve-3d; /* 保留 3D 上下文，让两面有空间感 */
+      transition: transform 0.9s cubic-bezier(0.4, 0.2, 0.2, 1);
+    }
+
+    /* 翻到正面（露出抽到的牌） */
+    .card.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    /* 洗牌时左右抖动（这个状态下不会和翻转同时存在） */
+    .card.shuffling .card-inner {
+      animation: wobble 0.4s ease-in-out infinite;
+    }
+
+    /* 模式切换瞬间复位，不要看到翻回动画 */
+    .card.no-anim .card-inner {
+      transition: none !important;
+    }
+
+    /* 卡片两面共用的基础样式 */
+    .card-face {
+      position: absolute;
+      inset: 0; /* 等同 top/right/bottom/left: 0 */
+      width: 100%;
+      height: 100%;
+      border-radius: 8px;
+      border: 2px solid rgba(255, 215, 106, 0.45);
+      backface-visibility: hidden;          /* 关键：背面隐藏，否则两面会同时看到 */
+      -webkit-backface-visibility: hidden;
+      box-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.4),
+        inset 0 0 30px rgba(120, 80, 180, 0.1);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+
+    /* 背面（默认朝外）—— 月亮符号 */
+    .card-back {
+      background:
+        radial-gradient(circle at center, rgba(120, 80, 180, 0.15), transparent 70%),
+        linear-gradient(135deg, rgba(30, 15, 50, 0.85) 0%, rgba(20, 10, 40, 0.85) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+      color: #ffd76a;
+      filter: drop-shadow(0 0 15px rgba(255, 215, 106, 0.5));
+    }
+
+    /* 正面（默认朝内，翻转后才露出） */
+    .card-front {
+      transform: rotateY(180deg); /* 镜像翻转，配合 .flipped 才显示正确 */
+      background:
+        radial-gradient(circle at top, rgba(255, 200, 100, 0.10), transparent 60%),
+        linear-gradient(165deg, rgba(35, 20, 60, 0.92) 0%, rgba(25, 15, 50, 0.92) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-around;
+      padding: 1.4rem 1rem;
+      text-align: center;
+    }
+
+    .card-num {
+      font-family: 'Cinzel', serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.18em;
+      color: rgba(255, 220, 140, 0.85);
+    }
+    .card-emoji {
+      font-size: 3.6rem;
+      filter: drop-shadow(0 0 18px rgba(255, 215, 106, 0.55));
+      line-height: 1;
+    }
+    .card-name {
+      font-family: 'Noto Serif SC', serif;
+      font-weight: 700;
+      font-size: 1.4rem;
+      letter-spacing: 0.18em;
+      color: #ffd97a;
+      text-shadow: 0 0 10px rgba(255, 200, 80, 0.4);
+    }
+    .card-keywords {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      color: rgba(255, 230, 180, 0.75);
+      line-height: 1.5;
+    }
+
+    .card-label {
+      font-family: 'Cinzel', serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.4em;
+      color: rgba(255, 220, 140, 0.75);
+    }
+
+    /* 洗牌抖动关键帧 —— 左右轻晃 + 微小旋转 */
+    @keyframes wobble {
+      0%, 100% { transform: translateX(0) rotate(0deg); }
+      25%      { transform: translateX(-6px) rotate(-2deg); }
+      75%      { transform: translateX(6px) rotate(2deg); }
+    }
+
+    /* --- 占卜师之言区 --- */
+    .reading {
+      width: 100%;
+      max-width: 700px;
+      min-height: 140px;
+      padding: 2rem 2.5rem;
+      border: 1px solid rgba(255, 215, 106, 0.3);
+      border-radius: 6px;
+
+      background: rgba(15, 8, 30, 0.55);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .reading p {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 1rem;
+      letter-spacing: 0.15em;
+      color: rgba(255, 230, 180, 0.55);
+      font-style: italic;
+      text-align: center;
+    }
+
+    /* AI 解读出现后切换到的"展示态"——左对齐、字号略大、行距更宽，方便阅读长段落 */
+    .reading.has-reading {
+      align-items: flex-start;
+      justify-content: flex-start;
+    }
+    .reading.has-reading p {
+      font-style: normal;
+      color: rgba(255, 230, 180, 0.92);
+      font-size: 1.05rem;
+      line-height: 1.95;
+      letter-spacing: 0.05em;
+      text-align: left;
+      white-space: pre-wrap; /* 保留 AI 输出里的换行 */
+    }
+
+    /* AI 凝视中态：文本脉动 + 底部金色光带流动，让用户知道"在动" */
+    .reading.is-loading {
+      position: relative;
+      overflow: hidden;
+    }
+    .reading.is-loading p {
+      animation: text-pulse 2s ease-in-out infinite;
+    }
+    .reading.is-loading::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 215, 106, 0.9) 50%,
+        transparent 100%
+      );
+      background-size: 50% 100%;
+      background-repeat: no-repeat;
+      animation: shimmer-bar 2s linear infinite;
+    }
+
+    @keyframes text-pulse {
+      0%, 100% { opacity: 0.6; }
+      50%      { opacity: 1;   }
+    }
+
+    @keyframes shimmer-bar {
+      0%   { background-position: -50% 0; }
+      100% { background-position: 150% 0; }
+    }
+
+    /* 流式输出态：在文末显示一个金色闪烁光标，强化"正在书写"的氛围 */
+    .reading.is-streaming p::after {
+      content: ' ·';
+      color: #ffd76a;
+      font-weight: 900;
+      margin-left: 2px;
+      animation: cursor-blink 0.9s steps(2) infinite;
+      text-shadow: 0 0 8px rgba(255, 200, 80, 0.7);
+    }
+
+    @keyframes cursor-blink {
+      0%, 49%   { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    /* --- 模式切换器（三牌阵 / 今日单张） --- */
+    .mode-switch {
+      display: inline-flex;
+      gap: 0;
+      padding: 4px;
+      background: rgba(15, 8, 30, 0.55);
+      border: 1px solid rgba(255, 215, 106, 0.3);
+      border-radius: 100px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .mode-tab {
+      padding: 0.65rem 1.6rem;
+      border: none;
+      background: transparent;
+      color: rgba(255, 230, 180, 0.55);
+      font-family: 'Noto Serif SC', serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.2em;
+      cursor: pointer;
+      border-radius: 100px;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+    .mode-tab:hover:not(.is-active) {
+      color: rgba(255, 230, 180, 0.85);
+    }
+    .mode-tab.is-active {
+      background: linear-gradient(135deg, rgba(255, 215, 106, 0.25), rgba(255, 200, 80, 0.18));
+      color: #ffd97a;
+      text-shadow: 0 0 10px rgba(255, 200, 80, 0.45);
+      box-shadow: inset 0 0 12px rgba(255, 200, 80, 0.15);
+    }
+
+    /* 单张模式下：隐藏第 2、3 张卡，第 1 张放大居中 */
+    .cards.is-single .card:nth-child(2),
+    .cards.is-single .card:nth-child(3) {
+      display: none;
+    }
+    .cards.is-single .card-inner {
+      width: 230px;
+      height: 365px;
+    }
+    .cards.is-single .card-emoji {
+      font-size: 4.6rem;
+    }
+    .cards.is-single .card-name {
+      font-size: 1.7rem;
+    }
+    .cards.is-single .card-keywords {
+      font-size: 0.88rem;
+    }
+
+    /* ==========================================================
+       分享按钮（AI 写完后浮现）
+       ========================================================== */
+    .share-btn {
+      display: none;
+      padding: 0.7rem 1.6rem;
+      background: rgba(15, 8, 30, 0.6);
+      border: 1px solid rgba(255, 215, 106, 0.45);
+      color: #ffd97a;
+      font-family: 'Noto Serif SC', serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.3em;
+      border-radius: 100px;
+      cursor: pointer;
+      transition: all 0.25s;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      align-self: center; /* 在 flex 父容器里居中 */
+    }
+    .share-btn.is-visible {
+      display: inline-block;
+      animation: fade-in-up 0.5s ease-out;
+    }
+    .share-btn:hover:not(:disabled) {
+      background: rgba(255, 215, 106, 0.15);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 18px rgba(255, 200, 80, 0.25);
+    }
+    .share-btn:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+    @keyframes fade-in-up {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ==========================================================
+       导出视图（屏外渲染，仅 html2canvas 用）
+       1080×1350 portrait（适合朋友圈/小红书 4:5）
+       —— 全部用 solid color 和 simple gradient，避免 backdrop-filter
+       ========================================================== */
+    .export-view {
+      position: absolute;
+      left: -99999px;
+      top: 0;
+      width: 1080px;
+      height: 1350px;          /* 三牌阵默认 4:5 */
+      background:
+        radial-gradient(ellipse at 30% 20%, rgba(120, 80, 180, 0.35), transparent 55%),
+        radial-gradient(ellipse at 75% 80%, rgba(80, 100, 180, 0.30), transparent 55%),
+        linear-gradient(160deg, #1a0e30 0%, #2a1850 45%, #1a1a45 100%);
+      color: #fff;
+      font-family: 'Noto Serif SC', serif;
+      box-sizing: border-box;
+      padding: 70px 80px;
+    }
+    /* 单张模式画布更紧凑（1080×1100），避免下方空白 */
+    .export-view.is-single {
+      height: 1100px;
+    }
+    .export-frame {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border: 2px solid rgba(255, 215, 106, 0.45);
+      border-radius: 8px;
+      padding: 50px 60px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    }
+    .export-corner {
+      position: absolute;
+      color: #ffd76a;
+      font-size: 18px;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(160deg, #1a0e30, #2a1850);
+    }
+    .export-corner-tl { top: -14px; left: -14px; }
+    .export-corner-tr { top: -14px; right: -14px; }
+    .export-corner-bl { bottom: -14px; left: -14px; }
+    .export-corner-br { bottom: -14px; right: -14px; }
+
+    .export-header {
+      text-align: center;
+      margin-bottom: 14px;
+    }
+    .export-title {
+      font-family: 'Noto Serif SC', serif;
+      font-weight: 900;
+      font-size: 88px;
+      letter-spacing: 0.35em;
+      color: #ffd97a;
+      text-shadow: 0 0 20px rgba(255, 200, 80, 0.5);
+      margin: 0;
+      padding-left: 0.35em;
+    }
+    .export-latin {
+      font-family: 'Cinzel', serif;
+      font-weight: 500;
+      font-size: 18px;
+      letter-spacing: 0.45em;        /* 收紧字距，避免散架 */
+      color: rgba(255, 230, 160, 0.95); /* 提亮，从背景里跳出来 */
+      margin-top: 18px;
+      padding-left: 0.45em;
+    }
+    .export-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 215, 106, 0.7), transparent);
+      margin: 30px 0;
+    }
+
+    .export-question {
+      font-family: 'Noto Serif SC', serif;
+      font-weight: 400;
+      font-style: italic;
+      font-size: 26px;
+      color: rgba(255, 230, 180, 0.9);
+      text-align: center;
+      line-height: 1.7;
+      letter-spacing: 0.05em;
+      margin-bottom: 36px;
+      padding: 0 20px;
+    }
+    .export-question.is-empty {
+      color: rgba(255, 230, 180, 0.6);
+    }
+    .export-question.is-hidden {
+      display: none;
+    }
+
+    .export-cards {
+      display: flex;
+      gap: 28px;
+      justify-content: center;
+      margin-bottom: 36px;
+    }
+    .export-card {
+      flex: 0 0 auto;
+      width: 180px;
+      padding: 22px 14px;
+      background: rgba(15, 8, 30, 0.55);
+      border: 1.5px solid rgba(255, 215, 106, 0.5);
+      border-radius: 8px;
+      text-align: center;
+      box-sizing: border-box;
+      box-shadow:
+        0 0 30px rgba(255, 200, 80, 0.18),    /* 金色光晕，让卡牌从背景跳出 */
+        0 6px 20px rgba(0, 0, 0, 0.35);        /* 下方阴影，加深立体感 */
+    }
+    .export-card-num {
+      font-family: 'Cinzel', serif;
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      color: rgba(255, 220, 140, 0.85);
+      margin-bottom: 14px;
+    }
+    .export-card-emoji {
+      font-size: 56px;
+      line-height: 1;
+      margin-bottom: 14px;
+    }
+    .export-card-name {
+      font-family: 'Noto Serif SC', serif;
+      font-weight: 700;
+      font-size: 22px;
+      letter-spacing: 0.18em;
+      color: #ffd97a;
+      margin-bottom: 10px;
+      padding-left: 0.18em;
+    }
+    .export-card-position {
+      font-family: 'Cinzel', serif;
+      font-size: 11px;
+      letter-spacing: 0.25em;
+      color: rgba(255, 220, 140, 0.7);
+    }
+    .export-cards.is-single .export-card {
+      width: 240px;
+      padding: 30px 20px;
+    }
+    .export-cards.is-single .export-card-emoji {
+      font-size: 76px;
+    }
+    .export-cards.is-single .export-card-name {
+      font-size: 28px;
+    }
+
+    .export-reading {
+      flex: 1;
+      font-family: 'Noto Serif SC', serif;
+      font-size: 22px;
+      line-height: 1.95;
+      color: rgba(255, 230, 180, 0.92);
+      letter-spacing: 0.04em;
+      text-align: justify;
+      white-space: pre-wrap;
+      overflow: hidden;
+    }
+
+    .export-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 215, 106, 0.3);
+      font-family: 'Cinzel', serif;
+      font-size: 16px;
+      letter-spacing: 0.22em;
+      color: rgba(255, 220, 140, 0.78);
+    }
+
+    /* ==========================================================
+       右上角浮动工具栏（命运之卷 / 后续的 🔊）
+       ========================================================== */
+    .floating-tools {
+      position: fixed;
+      top: 1.4rem;
+      right: 1.4rem;
+      display: flex;
+      gap: 0.7rem;
+      z-index: 50;
+    }
+    .floating-btn {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 215, 106, 0.45);
+      background: rgba(15, 8, 30, 0.65);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      color: #ffd97a;
+      font-size: 1.2rem;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+      transition: all 0.25s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .floating-btn:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 215, 106, 0.85);
+      box-shadow: 0 6px 22px rgba(255, 200, 80, 0.35);
+    }
+
+    /* ==========================================================
+       模态层（历史记录用）
+       ========================================================== */
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal[aria-hidden="false"] {
+      display: flex;
+      animation: modal-fade 0.25s ease-out;
+    }
+    @keyframes modal-fade {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    .modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(5, 3, 15, 0.78);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .modal-panel {
+      position: relative;
+      width: 100%;
+      max-width: 700px;
+      max-height: 86vh;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(165deg, rgba(35, 20, 60, 0.96), rgba(20, 12, 40, 0.96));
+      border: 1px solid rgba(255, 215, 106, 0.35);
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55), 0 0 30px rgba(255, 200, 80, 0.1);
+    }
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem 1.6rem;
+      border-bottom: 1px solid rgba(255, 215, 106, 0.18);
+    }
+    .modal-title {
+      font-family: 'Cinzel', serif;
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 0.3em;
+      color: #ffd97a;
+      text-shadow: 0 0 10px rgba(255, 200, 80, 0.35);
+    }
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 215, 106, 0.3);
+      background: transparent;
+      color: rgba(255, 220, 140, 0.7);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .modal-close:hover {
+      border-color: #ffd97a;
+      color: #ffd97a;
+    }
+    .modal-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.2rem 1.6rem;
+    }
+    .modal-foot {
+      padding: 0.9rem 1.6rem;
+      border-top: 1px solid rgba(255, 215, 106, 0.18);
+      text-align: right;
+    }
+    .modal-clear {
+      padding: 0.5rem 1.2rem;
+      background: transparent;
+      border: 1px solid rgba(255, 100, 100, 0.4);
+      color: rgba(255, 160, 160, 0.85);
+      font-family: 'Noto Serif SC', serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.2em;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .modal-clear:hover {
+      background: rgba(255, 100, 100, 0.15);
+      color: rgba(255, 200, 200, 1);
+    }
+
+    /* 历史列表 */
+    .history-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .history-empty {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: rgba(255, 230, 180, 0.45);
+      font-family: 'Noto Serif SC', serif;
+      font-style: italic;
+      letter-spacing: 0.15em;
+      line-height: 2;
+    }
+    .history-item {
+      padding: 1rem 1.2rem;
+      background: rgba(15, 8, 30, 0.5);
+      border: 1px solid rgba(255, 215, 106, 0.2);
+      border-radius: 8px;
+    }
+    .history-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.6rem;
+      font-family: 'Cinzel', serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      color: rgba(255, 220, 140, 0.6);
+    }
+    .history-mode-badge {
+      padding: 2px 0.7rem;
+      border: 1px solid rgba(255, 215, 106, 0.4);
+      border-radius: 100px;
+      font-size: 0.68rem;
+      color: #ffd97a;
+    }
+    .history-question {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 0.95rem;
+      color: rgba(255, 230, 180, 0.92);
+      margin-bottom: 0.6rem;
+      letter-spacing: 0.05em;
+    }
+    .history-question.is-empty {
+      color: rgba(255, 230, 180, 0.45);
+      font-style: italic;
+    }
+    .history-cards {
+      display: flex;
+      gap: 0.9rem;
+      margin-bottom: 0.7rem;
+      flex-wrap: wrap;
+      font-family: 'Noto Serif SC', serif;
+      font-size: 0.78rem;
+      color: rgba(255, 220, 140, 0.7);
+    }
+    .history-cards span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .history-reading {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 0.88rem;
+      line-height: 1.85;
+      color: rgba(255, 230, 180, 0.78);
+      letter-spacing: 0.04em;
+      max-height: 4.7em;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      transition: max-height 0.4s;
+    }
+    .history-reading.is-expanded {
+      max-height: 50em;
+    }
+    .history-reading:not(.is-expanded)::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2em;
+      background: linear-gradient(to bottom, transparent, rgba(20, 12, 40, 0.96));
+      pointer-events: none;
+    }
+    .history-toggle {
+      display: inline-block;
+      margin-top: 0.4rem;
+      font-family: 'Cinzel', serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      color: rgba(255, 215, 106, 0.65);
+      cursor: pointer;
+    }
+    .history-toggle:hover {
+      color: #ffd97a;
+    }
+
+    /* --- 页脚 --- */
+    footer {
+      margin-top: 4rem;
+      text-align: center;
+      font-family: 'Cinzel', serif;
+      font-weight: 500;
+      font-size: 0.85rem;
+      color: rgba(255, 220, 140, 0.55);
+      letter-spacing: 0.25em;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <!-- 标题区 -->
+    <section class="hero">
+      <h1>夜行塔罗</h1>
+      <p class="latin-title">NOCTURNE&nbsp;TAROT</p>
+      <p class="subtitle">问星辰　问月　问你心底的牌</p>
+    </section>
+
+    <!-- 占卜仪式区 -->
+    <section class="ritual">
+
+      <!-- 牌阵模式切换 -->
+      <div class="mode-switch" role="tablist">
+        <button class="mode-tab is-active" data-mode="three" type="button">三牌阵 · 过去现在未来</button>
+        <button class="mode-tab"           data-mode="single" type="button">今日单张 · TODAY</button>
+      </div>
+
+      <!-- 问题输入框 -->
+      <div class="question-box">
+        <label>心中所惑 · YOUR QUESTION</label>
+        <textarea
+          id="question"
+          placeholder="心中所惑，悄悄写下——星辰将聆听你的问题…"
+        ></textarea>
+      </div>
+
+      <!-- 占卜按钮（默认禁用，输入框有内容才启用） -->
+      <button id="divine-btn" class="divine-btn" disabled>洗牌占卜</button>
+
+      <!-- 按钮下方提示，按钮启用后淡出 -->
+      <p id="btn-hint" class="btn-hint">请先在上方写下你的问题</p>
+
+      <!-- 三张卡片（每张都有正反两面，初始展示背面） -->
+      <div class="cards" id="cards">
+        <div class="card">
+          <div class="card-inner">
+            <div class="card-face card-back">☾</div>
+            <div class="card-face card-front">
+              <div class="card-num"></div>
+              <div class="card-emoji"></div>
+              <div class="card-name"></div>
+              <div class="card-keywords"></div>
+            </div>
+          </div>
+          <div class="card-label">过去 · PAST</div>
+        </div>
+
+        <div class="card">
+          <div class="card-inner">
+            <div class="card-face card-back">☾</div>
+            <div class="card-face card-front">
+              <div class="card-num"></div>
+              <div class="card-emoji"></div>
+              <div class="card-name"></div>
+              <div class="card-keywords"></div>
+            </div>
+          </div>
+          <div class="card-label">现在 · PRESENT</div>
+        </div>
+
+        <div class="card">
+          <div class="card-inner">
+            <div class="card-face card-back">☾</div>
+            <div class="card-face card-front">
+              <div class="card-num"></div>
+              <div class="card-emoji"></div>
+              <div class="card-name"></div>
+              <div class="card-keywords"></div>
+            </div>
+          </div>
+          <div class="card-label">未来 · FUTURE</div>
+        </div>
+      </div>
+
+      <!-- 占卜师之言区 -->
+      <div class="reading" id="reading-area">
+        <p id="reading-text">占卜师正在等待你的问题…</p>
+      </div>
+
+      <!-- 分享按钮（AI 写完后才显示） -->
+      <button id="share-btn" class="share-btn" type="button">🌙 保存为图</button>
+
+    </section>
+  </main>
+
+  <footer>by V · 2026</footer>
+
+  <!-- 右上角浮动按钮区 -->
+  <div class="floating-tools">
+    <button id="audio-btn" class="floating-btn" type="button" aria-label="切换打字机声音" title="点击静音">🔊</button>
+    <button id="history-btn" class="floating-btn" type="button" aria-label="命运之卷" title="命运之卷">📜</button>
+  </div>
+
+  <!-- 分享导出视图（屏外渲染，仅截图时使用 —— 不用 backdrop-filter，html2canvas 才能截好） -->
+  <div id="export-view" class="export-view" aria-hidden="true">
+    <div class="export-frame">
+      <div class="export-corner export-corner-tl">✦</div>
+      <div class="export-corner export-corner-tr">✦</div>
+      <div class="export-corner export-corner-bl">✦</div>
+      <div class="export-corner export-corner-br">✦</div>
+
+      <header class="export-header">
+        <h2 class="export-title">夜行塔罗</h2>
+        <p class="export-latin">NOCTURNE&nbsp;TAROT</p>
+      </header>
+
+      <div class="export-divider"></div>
+
+      <div id="export-question" class="export-question"></div>
+
+      <div id="export-cards" class="export-cards"></div>
+
+      <div id="export-reading" class="export-reading"></div>
+
+      <footer class="export-footer">
+        <span id="export-timestamp"></span>
+        <span class="export-brand">by V · 2026</span>
+      </footer>
+    </div>
+  </div>
+
+  <!-- 历史记录模态层（命运之卷） -->
+  <div class="modal" id="history-modal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-panel" role="dialog" aria-labelledby="modal-title">
+      <header class="modal-head">
+        <h2 id="modal-title" class="modal-title">命运之卷 · CHRONICLE</h2>
+        <button class="modal-close" type="button" aria-label="关闭" data-close-modal>✕</button>
+      </header>
+
+      <div class="modal-body">
+        <ul id="history-list" class="history-list">
+          <!-- JS 动态填充 -->
+        </ul>
+        <p id="history-empty" class="history-empty">命运之卷尚无书写……<br>占完一卦后，记录会出现在这里。</p>
+      </div>
+
+      <footer class="modal-foot">
+        <button id="clear-history-btn" class="modal-clear" type="button">清空全部</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- 极简 JS：输入框为空时禁用按钮，有内容才启用       -->
+  <!-- 这是你的 JS 初体验，5 行而已                     -->
+  <!-- ============================================== -->
+  <script>
+    /* ==========================================================
+       ① 22 张大阿卡纳数据
+       —— 每张牌包含罗马数字、中英文名、emoji、关键词
+       Day 4 调 AI 时会把这些信息发给火山引擎做解读
+       ========================================================== */
+    const tarotDeck = [
+      { num: "0",     name: "愚者",     nameEn: "The Fool",          emoji: "🃏", keywords: ["新开始", "冒险", "纯真"] },
+      { num: "I",     name: "魔术师",   nameEn: "The Magician",      emoji: "🎩", keywords: ["创造", "意志", "技能"] },
+      { num: "II",    name: "女祭司",   nameEn: "The High Priestess",emoji: "🌙", keywords: ["直觉", "神秘", "内在智慧"] },
+      { num: "III",   name: "皇后",     nameEn: "The Empress",       emoji: "🌹", keywords: ["丰饶", "母性", "自然"] },
+      { num: "IV",    name: "皇帝",     nameEn: "The Emperor",       emoji: "👑", keywords: ["权威", "结构", "秩序"] },
+      { num: "V",     name: "教皇",     nameEn: "The Hierophant",    emoji: "⛪", keywords: ["传统", "信仰", "教导"] },
+      { num: "VI",    name: "恋人",     nameEn: "The Lovers",        emoji: "💞", keywords: ["爱情", "抉择", "结合"] },
+      { num: "VII",   name: "战车",     nameEn: "The Chariot",       emoji: "🏇", keywords: ["决心", "胜利", "前进"] },
+      { num: "VIII",  name: "力量",     nameEn: "Strength",          emoji: "🦁", keywords: ["勇气", "温柔", "内在力量"] },
+      { num: "IX",    name: "隐者",     nameEn: "The Hermit",        emoji: "🕯", keywords: ["内省", "孤独", "寻找"] },
+      { num: "X",     name: "命运之轮", nameEn: "Wheel of Fortune",  emoji: "🎡", keywords: ["转变", "命运", "循环"] },
+      { num: "XI",    name: "正义",     nameEn: "Justice",           emoji: "⚖", keywords: ["公平", "真相", "因果"] },
+      { num: "XII",   name: "倒吊人",   nameEn: "The Hanged Man",    emoji: "🙃", keywords: ["牺牲", "放下", "新视角"] },
+      { num: "XIII",  name: "死神",     nameEn: "Death",             emoji: "💀", keywords: ["结束", "转化", "重生"] },
+      { num: "XIV",   name: "节制",     nameEn: "Temperance",        emoji: "⚗", keywords: ["平衡", "和谐", "调和"] },
+      { num: "XV",    name: "恶魔",     nameEn: "The Devil",         emoji: "😈", keywords: ["束缚", "欲望", "阴影"] },
+      { num: "XVI",   name: "塔",       nameEn: "The Tower",         emoji: "🗼", keywords: ["突变", "毁灭", "觉醒"] },
+      { num: "XVII",  name: "星星",     nameEn: "The Star",          emoji: "⭐", keywords: ["希望", "灵感", "平静"] },
+      { num: "XVIII", name: "月亮",     nameEn: "The Moon",          emoji: "🌕", keywords: ["幻觉", "潜意识", "迷雾"] },
+      { num: "XIX",   name: "太阳",     nameEn: "The Sun",           emoji: "☀", keywords: ["喜悦", "成功", "活力"] },
+      { num: "XX",    name: "审判",     nameEn: "Judgement",         emoji: "📯", keywords: ["召唤", "复活", "觉醒"] },
+      { num: "XXI",   name: "世界",     nameEn: "The World",         emoji: "🌍", keywords: ["完成", "整合", "圆满"] },
+    ];
+
+    /* ==========================================================
+       ② 找到页面元素
+       ========================================================== */
+    const questionInput = document.getElementById('question');
+    const divineBtn = document.getElementById('divine-btn');
+    const btnHint = document.getElementById('btn-hint');
+    const cardsContainer = document.getElementById('cards');
+    const cardElements = document.querySelectorAll('.card');
+    const readingArea = document.getElementById('reading-area');
+    const readingText = document.getElementById('reading-text');
+    const modeTabs = document.querySelectorAll('.mode-tab');
+
+    // 当前牌阵模式：'three'（三牌阵）或 'single'（今日单张）
+    let currentMode = 'three';
+
+    // 保存最近一次抽到的牌（给后端接口用）
+    let lastDrawn = null;
+
+    // 防止动画/AI 调用期间重复点击
+    let isAnimating = false;
+
+    // 每个模式独立记忆自己最近一次的占卜结果（卡牌 + 解读文字）
+    // 切换模式时切换到那个模式自己的状态，互不污染
+    const lastReadingByMode = {
+      three: null,   // { drawn: [c1, c2, c3], reading: "..." } | null
+      single: null,  // { drawn: [c1],         reading: "..." } | null
+    };
+
+    /* ==========================================================
+       命运之卷 · 历史记录（localStorage 持久化）
+       ========================================================== */
+    const HISTORY_STORAGE_KEY = 'nocturne-tarot:history';
+    const HISTORY_MAX = 5;
+
+    // 启动时从 localStorage 读
+    function loadHistory() {
+      try {
+        const raw = localStorage.getItem(HISTORY_STORAGE_KEY);
+        if (!raw) return [];
+        const arr = JSON.parse(raw);
+        return Array.isArray(arr) ? arr : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    // 写回 localStorage
+    function persistHistory(arr) {
+      try {
+        localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(arr));
+      } catch (e) {
+        console.warn('无法写入历史记录:', e);
+      }
+    }
+
+    // 添加一条历史记录（新的在前，超出上限丢弃最旧的）
+    function pushHistory(entry) {
+      const arr = loadHistory();
+      arr.unshift(entry);                       // 新的塞最前
+      if (arr.length > HISTORY_MAX) arr.length = HISTORY_MAX;
+      persistHistory(arr);
+    }
+
+    // 清空全部
+    function clearHistory() {
+      persistHistory([]);
+    }
+
+    // 把时间戳转为友好相对时间（"5 分钟前"）
+    function formatRelativeTime(ts) {
+      const diff = Math.floor((Date.now() - ts) / 1000);
+      if (diff < 60)        return '刚刚';
+      if (diff < 3600)      return Math.floor(diff / 60) + ' 分钟前';
+      if (diff < 86400)     return Math.floor(diff / 3600) + ' 小时前';
+      if (diff < 86400 * 7) return Math.floor(diff / 86400) + ' 天前';
+      const d = new Date(ts);
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+
+    /* 渲染历史列表到模态层 */
+    function renderHistoryList() {
+      const listEl = document.getElementById('history-list');
+      const emptyEl = document.getElementById('history-empty');
+      const arr = loadHistory();
+
+      listEl.innerHTML = '';
+      if (arr.length === 0) {
+        emptyEl.style.display = 'block';
+        return;
+      }
+      emptyEl.style.display = 'none';
+
+      arr.forEach(function (item) {
+        const li = document.createElement('li');
+        li.className = 'history-item';
+
+        const modeLabel = item.mode === 'single' ? '今日单张' : '三牌阵';
+        const cardLine = item.drawn.map(function (c) {
+          return `<span>${c.emoji} ${c.name}</span>`;
+        }).join(' · ');
+
+        const questionHtml = item.question
+          ? `<div class="history-question">${escapeHtml(item.question)}</div>`
+          : `<div class="history-question is-empty">（未填问题，凝视今日）</div>`;
+
+        li.innerHTML = `
+          <div class="history-meta">
+            <span>${formatRelativeTime(item.timestamp)}</span>
+            <span class="history-mode-badge">${modeLabel}</span>
+          </div>
+          ${questionHtml}
+          <div class="history-cards">${cardLine}</div>
+          <div class="history-reading">${escapeHtml(item.reading)}</div>
+          <span class="history-toggle">展开 ↓</span>
+        `;
+
+        // 展开/收起切换
+        const readingEl = li.querySelector('.history-reading');
+        const toggleEl = li.querySelector('.history-toggle');
+        const toggle = function () {
+          readingEl.classList.toggle('is-expanded');
+          toggleEl.textContent = readingEl.classList.contains('is-expanded') ? '收起 ↑' : '展开 ↓';
+        };
+        readingEl.addEventListener('click', toggle);
+        toggleEl.addEventListener('click', toggle);
+
+        listEl.appendChild(li);
+      });
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    /* 打开/关闭模态 */
+    const historyModal = document.getElementById('history-modal');
+    function openHistoryModal() {
+      renderHistoryList();
+      historyModal.setAttribute('aria-hidden', 'false');
+    }
+    function closeHistoryModal() {
+      historyModal.setAttribute('aria-hidden', 'true');
+    }
+
+    document.getElementById('history-btn').addEventListener('click', openHistoryModal);
+    historyModal.querySelectorAll('[data-close-modal]').forEach(function (el) {
+      el.addEventListener('click', closeHistoryModal);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && historyModal.getAttribute('aria-hidden') === 'false') {
+        closeHistoryModal();
+      }
+    });
+    document.getElementById('clear-history-btn').addEventListener('click', function () {
+      if (confirm('确定要清空全部命运之卷？此操作不可撤销。')) {
+        clearHistory();
+        renderHistoryList();
+      }
+    });
+
+    /* ==========================================================
+       打字机显示队列
+       —— 把"网络收到字"和"屏幕展示字"解耦
+       —— 不管 AI 是真流式还是一次性返回，用户都看到逐字浮出
+       ========================================================== */
+    const TYPE_INTERVAL_MS = 38;       // 每字显示间隔（约 26 字/秒）
+    let typeQueue = '';                // 待显示字符
+    let typeTimer = null;              // 定时器 ID
+    let onAllTypedResolve = null;      // 等所有字都"打完"时的 Promise resolve
+
+    function startTypewriter() {
+      if (typeTimer) return;
+      typeTimer = setInterval(function () {
+        if (typeQueue.length === 0) return;        // 没字就空跑等下一批
+        const ch = typeQueue.charAt(0);
+        typeQueue = typeQueue.slice(1);
+        readingText.textContent += ch;
+        playTickSound();                            // 一字一声
+      }, TYPE_INTERVAL_MS);
+    }
+
+    function stopTypewriter() {
+      if (typeTimer) {
+        clearInterval(typeTimer);
+        typeTimer = null;
+      }
+    }
+
+    /* 让 AI 流入的字符进入队列，由定时器统一吐出 */
+    function enqueueChars(text) {
+      typeQueue += text;
+    }
+
+    /* 等队列全部吐完（用于 AI 完成后再保存历史等）*/
+    function waitForQueueDrain() {
+      return new Promise(function (resolve) {
+        const checker = setInterval(function () {
+          if (typeQueue.length === 0) {
+            clearInterval(checker);
+            resolve();
+          }
+        }, 50);
+      });
+    }
+
+    /* ==========================================================
+       打字机声音 · Web Audio API 合成
+       —— 浏览器要求音频在用户手势后启动，所以延迟初始化
+       —— 用户偏好存 localStorage（默认开）
+       ========================================================== */
+    const AUDIO_PREF_KEY = 'nocturne-tarot:audio-on';
+    let isAudioOn = localStorage.getItem(AUDIO_PREF_KEY) !== '0'; // 缺省值=true
+    let audioContext = null;
+    let lastTickAt = 0;     // 节流：上一次发声时刻（毫秒）
+    const TICK_MIN_GAP_MS = 80;
+
+    function initAudioIfNeeded() {
+      if (audioContext) return;
+      try {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return;
+        audioContext = new Ctx();
+      } catch (e) {
+        console.warn('音频不可用:', e);
+      }
+    }
+
+    function playTickSound() {
+      if (!isAudioOn || !audioContext) return;
+      // 注意：现在打字机已经控制节奏（每 38ms 一字），不再需要时间节流
+
+      try {
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+
+        // 高频带一点随机变化，听起来不机械
+        osc.type = 'triangle';
+        osc.frequency.value = 1000 + Math.random() * 400; // 1000-1400 Hz
+
+        // 极快衰减包络（30-40ms）—— 像键盘/钢琴的轻按
+        const t = audioContext.currentTime;
+        gain.gain.setValueAtTime(0.06, t);
+        gain.gain.exponentialRampToValueAtTime(0.0005, t + 0.05);
+
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        osc.start(t);
+        osc.stop(t + 0.06);
+      } catch (e) {
+        // 偶尔某些浏览器会抛错，安全忽略
+      }
+    }
+
+    // 🔊 按钮：切换静音 + 持久化
+    const audioBtn = document.getElementById('audio-btn');
+
+    function refreshAudioBtnUI() {
+      audioBtn.textContent = isAudioOn ? '🔊' : '🔇';
+      audioBtn.title = isAudioOn ? '点击静音' : '点击开启声音';
+    }
+    refreshAudioBtnUI();
+
+    audioBtn.addEventListener('click', function () {
+      isAudioOn = !isAudioOn;
+      localStorage.setItem(AUDIO_PREF_KEY, isAudioOn ? '1' : '0');
+      refreshAudioBtnUI();
+      // 首次开声音 + 还没初始化 → 立刻初始化（点击本身就是用户手势）
+      if (isAudioOn) initAudioIfNeeded();
+    });
+
+    /* ==========================================================
+       分享卡片 · 把当前占卜结果生成 PNG 下载
+       ========================================================== */
+    const shareBtn = document.getElementById('share-btn');
+
+    function showShareButton()  { shareBtn.classList.add('is-visible'); }
+    function hideShareButton()  { shareBtn.classList.remove('is-visible'); }
+
+    /* 把当前占卜内容填到屏外的导出视图，再用 html2canvas 截图 */
+    async function generateShareImage() {
+      const drawn = lastDrawn;
+      if (!drawn || drawn.length === 0) return;
+
+      const exportView   = document.getElementById('export-view');
+      const exportQ      = document.getElementById('export-question');
+      const exportCards  = document.getElementById('export-cards');
+      const exportRead   = document.getElementById('export-reading');
+      const exportTime   = document.getElementById('export-timestamp');
+
+      // 0. 切换画布尺寸（单张更紧凑）
+      const isSingle = currentMode === 'single';
+      exportView.classList.toggle('is-single', isSingle);
+
+      // 1. 填问题（单张模式没有问题时直接隐藏问题区，让卡牌自己说话）
+      const question = questionInput.value.trim();
+      if (question) {
+        exportQ.textContent = '"' + question + '"';
+        exportQ.classList.remove('is-empty', 'is-hidden');
+      } else if (isSingle) {
+        exportQ.classList.add('is-hidden');
+      } else {
+        // 三牌阵理论上不会无问题（因为按钮被锁），兜底显示
+        exportQ.textContent = '凝视今日';
+        exportQ.classList.add('is-empty');
+        exportQ.classList.remove('is-hidden');
+      }
+
+      // 2. 填卡牌
+      const positions = isSingle ? ['今日 · TODAY'] : ['过去 · PAST', '现在 · PRESENT', '未来 · FUTURE'];
+      exportCards.classList.toggle('is-single', isSingle);
+      exportCards.innerHTML = drawn.map(function (c, i) {
+        return `
+          <div class="export-card">
+            <div class="export-card-num">${c.num} · ${escapeHtml(c.nameEn)}</div>
+            <div class="export-card-emoji">${c.emoji}</div>
+            <div class="export-card-name">${escapeHtml(c.name)}</div>
+            <div class="export-card-position">${positions[i] || ''}</div>
+          </div>`;
+      }).join('');
+
+      // 3. 填解读
+      exportRead.textContent = readingText.textContent;
+
+      // 4. 填时间戳
+      const now = new Date();
+      const pad = function (n) { return String(n).padStart(2, '0'); };
+      exportTime.textContent = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+      // 5. 截图
+      shareBtn.disabled = true;
+      shareBtn.textContent = '🌙 正在召唤画卷…';
+      try {
+        // 等字体确认加载完（避免截图时还在用 fallback 字体）
+        if (document.fonts && document.fonts.ready) {
+          await document.fonts.ready;
+        }
+
+        const canvas = await html2canvas(exportView, {
+          scale: 1,                  // 已经按目标分辨率渲染，不用再放大
+          backgroundColor: null,
+          useCORS: true,
+          logging: false,
+          width: 1080,
+          height: isSingle ? 1100 : 1350, // 模式动态尺寸
+        });
+
+        // 6. 触发下载
+        const dataUrl = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        const stamp = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
+        link.download = `nocturne-tarot-${stamp}.png`;
+        link.href = dataUrl;
+        link.click();
+
+      } catch (err) {
+        console.error('生成图片失败:', err);
+        alert('生成图片失败：' + err.message);
+      } finally {
+        shareBtn.disabled = false;
+        shareBtn.textContent = '🌙 保存为图';
+      }
+    }
+
+    shareBtn.addEventListener('click', generateShareImage);
+
+    /* 把卡牌区和解读区恢复到初始（未占卜）状态 */
+    function resetCardsAndReading() {
+      cardElements.forEach(function (c) {
+        c.classList.remove('flipped', 'shuffling');
+      });
+      readingArea.classList.remove('has-reading', 'is-loading', 'is-streaming');
+      stopWaitingAnimation();
+      readingText.textContent = '占卜师正在等待你的问题…';
+      // 没东西可分享，隐藏按钮
+      if (typeof hideShareButton === 'function') hideShareButton();
+      // 把 lastDrawn 也清掉，防止误用旧数据
+      lastDrawn = null;
+    }
+
+    /* 把卡牌区和解读区恢复到 state 描述的状态（卡牌已翻、文字展示） */
+    function restoreReading(state) {
+      if (!state) {
+        resetCardsAndReading();
+        return;
+      }
+      // 把保存的牌内容写回正面
+      renderCards(state.drawn);
+      // 翻开前 N 张（其余卡保持背面）
+      cardElements.forEach(function (c, i) {
+        c.classList.remove('shuffling');
+        if (i < state.drawn.length) c.classList.add('flipped');
+        else c.classList.remove('flipped');
+      });
+      // 恢复解读文字
+      readingArea.classList.remove('is-loading', 'is-streaming');
+      readingArea.classList.add('has-reading');
+      stopWaitingAnimation();
+      readingText.textContent = state.reading;
+      // 同步 lastDrawn，让分享按钮也能用
+      lastDrawn = state.drawn;
+      if (typeof showShareButton === 'function') showShareButton();
+    }
+
+    /* ==========================================================
+       ③ 输入框监听 + 模式切换
+       —— 共用一个 updateButtonState：根据当前状态决定按钮启用/禁用
+       —— 三牌阵模式：必须填问题才能点
+       —— 单张模式：可以不填（不填时 AI 会做"今日大致"解读）
+       ========================================================== */
+    function updateButtonState() {
+      const isEmpty = questionInput.value.trim().length === 0;
+      const requireQuestion = currentMode === 'three';
+      const shouldDisable = requireQuestion && isEmpty;
+      divineBtn.disabled = shouldDisable;
+      btnHint.classList.toggle('is-hidden', !shouldDisable);
+    }
+
+    questionInput.addEventListener('input', updateButtonState);
+
+    // 模式切换：点击 tab → 切换 currentMode + 切换样式
+    modeTabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        if (isAnimating) return;            // 动画中不允许切换
+        const newMode = tab.dataset.mode;
+        if (newMode === currentMode) return;
+
+        currentMode = newMode;
+        modeTabs.forEach(function (t) { t.classList.remove('is-active'); });
+        tab.classList.add('is-active');
+
+        // 切换 .cards 的 .is-single 类，让 CSS 接管视觉
+        cardsContainer.classList.toggle('is-single', currentMode === 'single');
+
+        // 第一张卡的下方标签随模式变化（"过去 · PAST" ↔ "今日 · TODAY"）
+        const firstLabel = cardElements[0].querySelector('.card-label');
+        firstLabel.textContent = currentMode === 'single' ? '今日 · TODAY' : '过去 · PAST';
+
+        // 调整占位文案
+        questionInput.placeholder = currentMode === 'single'
+          ? '想问今日，可以不填——也可以写下心中所惑…'
+          : '心中所惑，悄悄写下——星辰将聆听你的问题…';
+
+        updateButtonState();
+
+        // 恢复目标模式自己保存的状态（每个模式独立记忆）
+        // 用"无动画"包裹：避免看到翻回背面的过渡动画
+        cardElements.forEach(function (c) { c.classList.add('no-anim'); });
+        void document.body.offsetWidth; // 触发 reflow，让 no-anim 立刻生效
+        restoreReading(lastReadingByMode[currentMode]);
+        void document.body.offsetWidth;
+        requestAnimationFrame(function () {
+          cardElements.forEach(function (c) { c.classList.remove('no-anim'); });
+        });
+      });
+    });
+
+    // Enter 快捷键 = 等同点击按钮；Shift+Enter 才是换行（聊天框标准用法）
+    questionInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();          // 阻止默认的换行
+        if (!divineBtn.disabled && !isAnimating) {
+          divineBtn.click();         // 模拟点击占卜按钮
+        }
+      }
+    });
+
+    /* ==========================================================
+       ③.5 凝视中循环文案 —— 让用户知道 AI 还在工作没卡死
+       ========================================================== */
+    const waitingMessages = [
+      '占卜师正在凝视水晶球…',
+      '聆听星辰的絮语…',
+      '翻阅命运之卷…',
+      '古老的智慧正在显形…',
+    ];
+    let waitingTimer = null;
+
+    function startWaitingAnimation() {
+      readingArea.classList.remove('has-reading');
+      readingArea.classList.add('is-loading');
+
+      let i = 0;
+      readingText.textContent = waitingMessages[0];
+      waitingTimer = setInterval(function () {
+        i = (i + 1) % waitingMessages.length;
+        readingText.textContent = waitingMessages[i];
+      }, 2800); // 每 2.8 秒换一句
+    }
+
+    function stopWaitingAnimation() {
+      if (waitingTimer) {
+        clearInterval(waitingTimer);
+        waitingTimer = null;
+      }
+      readingArea.classList.remove('is-loading');
+    }
+
+    /* ==========================================================
+       ④ 工具函数：从 22 张里随机抽 N 张不重复
+       —— 经典 Fisher-Yates 简化版：先复制一份，随机排序后取前 N
+       ========================================================== */
+    function drawCards(count) {
+      const copy = [...tarotDeck];                      // 复制一份，避免污染原数组
+      copy.sort(() => Math.random() - 0.5);             // 随机打乱
+      return copy.slice(0, count);                      // 取前 count 张
+    }
+
+    /* ==========================================================
+       ⑤ 工具函数：把抽到的牌渲染到对应卡位的正面
+       —— 只渲染前 drawn.length 张，多余卡位不动
+       ========================================================== */
+    function renderCards(drawn) {
+      drawn.forEach(function (cardData, i) {
+        const card = cardElements[i];
+        const front = card.querySelector('.card-front');
+        front.querySelector('.card-num').textContent      = cardData.num + " · " + cardData.nameEn;
+        front.querySelector('.card-emoji').textContent    = cardData.emoji;
+        front.querySelector('.card-name').textContent     = cardData.name;
+        front.querySelector('.card-keywords').textContent = cardData.keywords.join(" · ");
+      });
+    }
+
+    /* ==========================================================
+       ⑥ 调用后端 AI 接口（流式版本）
+       —— 后端把火山引擎的 SSE 流原样转过来
+       —— 我们边读边把每个新字通过 onChunk 回调送给主流程
+       ========================================================== */
+    async function callAIForReading(question, cards, onChunk) {
+      const response = await fetch('/divine', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, cards }),
+      });
+
+      if (!response.ok) {
+        // 后端 4xx/5xx：尝试读取错误 JSON
+        let msg = '占卜师暂时无法回应';
+        try {
+          const errData = await response.json();
+          if (errData.error) msg = errData.error;
+        } catch (e) { /* 忽略解析失败 */ }
+        throw new Error(msg);
+      }
+
+      // 流式读取：用 ReadableStream 的 reader 一块一块取
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        // 累积到 buffer，因为一个字符可能跨两个数据块
+        buffer += decoder.decode(value, { stream: true });
+
+        // SSE 协议每行格式：data: {...}\n\n
+        const lines = buffer.split('\n');
+        buffer = lines.pop();    // 最后一行可能不完整，留到下次
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith('data:')) continue;
+
+          const payload = trimmed.slice(5).trim();   // 去掉 "data:" 前缀
+          if (payload === '[DONE]') return;          // 火山发的结束标记
+
+          try {
+            const parsed = JSON.parse(payload);
+            // OpenAI 兼容流式格式：choices[0].delta.content 是新增的字符
+            const delta = parsed.choices?.[0]?.delta?.content;
+            if (delta) onChunk(delta);
+          } catch (e) {
+            // 偶尔会有空行或非 JSON，安全忽略
+          }
+        }
+      }
+    }
+
+    /* ==========================================================
+       ⑦ 主流程：点击按钮触发 洗牌 → 抽牌 → 翻面 → 调 AI
+       ========================================================== */
+    divineBtn.addEventListener('click', function () {
+      if (divineBtn.disabled || isAnimating) return;
+      isAnimating = true;
+
+      // 用户手势触发 —— 在这里初始化音频上下文（浏览器要求）
+      initAudioIfNeeded();
+
+      // 7.1 解读区进入"凝视中"动画态：循环文案 + 文本脉动 + 底部光带流动
+      startWaitingAnimation();
+      hideShareButton();   // 新一轮占卜开始：隐藏分享按钮
+
+      // 7.2 如果之前已经翻开了，先翻回背面
+      const wasFlipped = cardElements[0].classList.contains('flipped');
+      cardElements.forEach(function (card) {
+        card.classList.remove('flipped');
+      });
+      const flipBackDelay = wasFlipped ? 900 : 0;
+
+      // 7.3 翻回背面后开始洗牌抖动
+      setTimeout(function () {
+        // 抽几张：单张模式 1 张，三牌阵 3 张
+        const drawnCount = currentMode === 'single' ? 1 : 3;
+
+        // 只让"会被翻开的"那些卡抖（其他卡在单张模式下是隐藏的，不抖）
+        for (let i = 0; i < drawnCount; i++) {
+          cardElements[i].classList.add('shuffling');
+        }
+
+        // 7.4 抽牌，写到正面（用户暂时看不到，因为是背面朝外）
+        const drawn = drawCards(drawnCount);
+        lastDrawn = drawn;
+        renderCards(drawn);
+
+        // 7.5 抖 1.5 秒后逐张翻面（每张间隔 400ms）
+        setTimeout(function () {
+          for (let i = 0; i < drawnCount; i++) {
+            const card = cardElements[i];
+            setTimeout(function () {
+              card.classList.remove('shuffling');
+              card.classList.add('flipped');
+
+              // 7.6 最后一张翻完后，再等 0.9 秒（翻转动画时间）调 AI
+              if (i === drawnCount - 1) {
+                setTimeout(async function () {
+                  let firstChunkArrived = false;
+
+                  try {
+                    await callAIForReading(
+                      questionInput.value.trim(),
+                      drawn,
+                      function onChunk(delta) {
+                        // 第一个字到达的瞬间，从"凝视水晶球"切到"占卜师正在书写"
+                        if (!firstChunkArrived) {
+                          firstChunkArrived = true;
+                          stopWaitingAnimation();           // 关闭循环文案 + 脉动 + 光带
+                          readingArea.classList.add('has-reading', 'is-streaming');
+                          readingText.textContent = '';     // 清掉"凝视水晶球…"占位
+                          startTypewriter();                // 启动逐字吐出 + 声音
+                        }
+                        // 把新字符送进队列，由定时器按节奏吐出
+                        enqueueChars(delta);
+                      }
+                    );
+
+                    // AI 已结束推送，但队列里可能还有字没吐完 —— 等吐完
+                    await waitForQueueDrain();
+                    stopTypewriter();
+                    // 流结束：移除光标
+                    readingArea.classList.remove('is-streaming');
+
+                    // 保存这次占卜到当前模式的记忆里（切回此模式时可恢复）
+                    lastReadingByMode[currentMode] = {
+                      drawn: drawn,
+                      reading: readingText.textContent,
+                    };
+
+                    // 写入命运之卷（localStorage 持久化，最多保留 5 条）
+                    pushHistory({
+                      timestamp: Date.now(),
+                      mode: currentMode,
+                      question: questionInput.value.trim(),
+                      drawn: drawn,
+                      reading: readingText.textContent,
+                    });
+
+                    // AI 写完后浮现分享按钮
+                    showShareButton();
+
+                  } catch (err) {
+                    stopWaitingAnimation();
+                    stopTypewriter();
+                    typeQueue = '';
+                    readingArea.classList.remove('has-reading', 'is-streaming');
+                    readingText.textContent = '✦ 星辰静默：' + err.message;
+                  } finally {
+                    isAnimating = false;
+                  }
+                }, 900);
+              }
+            }, i * 400);
+          }
+        }, 1500);
+      }, flipBackDelay);
+    });
+  </script>
+</body>
+</html>
