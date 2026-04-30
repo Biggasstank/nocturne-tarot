@@ -10,6 +10,7 @@
 // ============================================================
 
 const express = require('express');
+const path = require('path');
 
 // === 配置 ===
 // Render 等部署平台会通过 PORT 环境变量注入端口；本地默认 3000
@@ -33,10 +34,11 @@ const app = express();
 // 让 Express 能解析 application/json 类型的请求体
 app.use(express.json());
 
-// 把当前文件夹作为静态文件根目录
-// 浏览器访问 / → 返回 index.html
-// 浏览器访问 /assets/bg.png → 返回 assets/bg.png
-app.use(express.static(__dirname));
+// 把 public/ 作为静态文件根目录
+//   本地：Express 自己服务 public/index.html、public/assets/*
+//   线上 (Vercel)：Vercel CDN 自动从 public/ 直接服务，根本不会到 Express 这层
+// 这条配置在两种环境下都对，无需分支
+app.use(express.static(path.join(__dirname, 'public')));
 
 // ============================================================
 // POST /divine —— 占卜接口
