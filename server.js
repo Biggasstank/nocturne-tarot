@@ -17,11 +17,14 @@ const PORT = process.env.PORT || 3000;
 const ARK_BASE_URL = 'https://ark.cn-beijing.volces.com/api/v3/chat/completions';
 const ARK_MODEL = 'doubao-seed-2-0-mini-260215';
 
-// 从环境变量读 API key（来自 .env，由 npm start 命令的 --env-file 加载）
+// 从环境变量读 API key
+//   本地：由 npm run dev 命令的 --env-file=.env 加载
+//   线上：由部署平台（Vercel / Render）的环境变量注入
+// 注意：不要在这里 process.exit(1)。Vercel 构建时会 require 本文件做 bundling，
+// 此时 env var 可能还没注入，退出会导致整个部署失败。改为运行时检查。
 const ARK_API_KEY = process.env.ARK_API_KEY;
 if (!ARK_API_KEY) {
-  console.error('❌ 没有读到 ARK_API_KEY，请检查 .env 文件是否存在并包含此变量');
-  process.exit(1);
+  console.warn('⚠️  ARK_API_KEY 未设置，/divine 请求会返回 500');
 }
 
 // === 创建 Express 应用 ===
@@ -41,6 +44,11 @@ app.use(express.static(__dirname));
 // 返回：    { reading: "AI 写的塔罗解读" }
 // ============================================================
 app.post('/divine', async (req, res) => {
+  // 运行时检查：如果环境变量没设，给前端清晰错误而不是神秘失败
+  if (!ARK_API_KEY) {
+    return res.status(500).json({ error: '服务器未配置 ARK_API_KEY 环境变量' });
+  }
+
   const { question, cards } = req.body;
 
   // 简单校验：必须有 1 张或 3 张卡（单张模式 / 三牌阵）
