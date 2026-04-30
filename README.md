@@ -75,4 +75,3 @@ nocturne-tarot/
 ## 许可
 
 MIT.
-</content>
